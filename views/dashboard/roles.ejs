@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roles and Users</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table th,
+        table td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #f4f4f4;
+        }
+
+        button {
+            background-color: white;
+            color: black;
+            border: none;
+            padding: 6px 12px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: white;
+        }
+
+        .popup-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .popup-modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+        }
+
+        .popup-modal-content button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+
+        .popup-modal-content button:hover {
+            background-color: #45a049;
+        }
+
+        .popup-modal .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .popup-modal .close:hover,
+        .popup-modal .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        #message {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="grid-container">
+        <%- include('../partials/header.ejs') %>
+
+            <aside id="sidebar">
+                <div class="sidebar-title">
+                    <div class="sidebar-brand">
+                        <span class="material-icons-outlined">shopping_cart</span> STORE
+                    </div>
+                    <span class="material-icons-outlined" onclick="closeSidebar()">close</span>
+                </div>
+                <ul class="sidebar-list">
+                    <li class="sidebar-list-item"><a href="../dashboard/dashboard">Dashboard</a></li>
+                    <li class="sidebar-list-item"><a href="../dashboard/products">Products</a></li>
+                    <li class="sidebar-list-item"><a href="../dashboard/categories">Categories</a></li>
+                    <li class="sidebar-list-item"><a href="../dashboard/customers">Customers</a></li>
+                    <li class="sidebar-list-item"><a href="../dashboard/inventory">Inventory</a></li>
+                    <li class="sidebar-list-item"><a href="../dashboard/createUser">Create User</a></li>
+                    <li class="sidebar-list-item"><a href="../dashboard/roles">Role</a></li>
+                    <li class="sidebar-list-item"><a href="/logout">Logout</a></li>
+                </ul>
+            </aside>
+
+            <div class="main-container">
+                <div class="main-title">
+                    <h1>Manage Roles and Users</h1>
+                </div>
+
+                <table id="roles-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (users && users.length> 0) { %>
+                            <% users.forEach(user=> { %>
+                                <tr>
+                                    <td>
+                                        <%= user.Username %>
+                                    </td>
+                                    <td>
+                                        <button
+                                            onclick="showPopup('<%= user.Email %>', '<%= user.Username %>', '<%= JSON.stringify(user.modules || []) %>')">
+                                            <%= user.Email %>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <%= user.Role %>
+                                    </td>
+                                    <td><button>Delete</button></td>
+                                </tr>
+                                <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="4">No users found</td>
+                                        </tr>
+                                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="popup-modal" class="popup-modal">
+                <div class="popup-modal-content">
+                    <span class="close" onclick="closePopup()">&times;</span>
+                    <h2>Select Modules for <span id="email-popup"></span> (User: <span id="username-popup"></span>)</h2>
+                    <form id="module-form">
+                        <% modules.forEach(module=> { %>
+                            <label>
+                                <input type="checkbox" name="modules[]" value="<%= module.ModuleName %>">
+                                <%= module.ModuleName %>
+                            </label><br>
+                            <% }) %>
+                                <button type="submit">Submit</button>
+                    </form>
+                    <div id="message"></div>
+                </div>
+            </div>
+    </div>
+
+    <script>
+        function showPopup(email, username, modulesJson) {
+            document.getElementById('email-popup').textContent = email;
+            document.getElementById('username-popup').textContent = username;
+
+            let userModules = [];
+            try {
+                userModules = JSON.parse(modulesJson);
+            } catch (e) {
+                console.error("Invalid JSON:", e);
+            }
+
+
+            document.querySelectorAll('input[name="modules[]"]').forEach(checkbox => {
+                if (userModules.includes(checkbox.value)) {
+                    checkbox.checked = true;
+                } else {
+                    checkbox.checked = false;
+                }
+            });
+
+
+            const userRole = sessionStorage.getItem('userRole');
+            document.querySelectorAll('input[name="modules[]"]').forEach(checkbox => {
+                if (userRole !== 'superadmin') {
+                    checkbox.disabled = false;
+                } else {
+                    checkbox.disabled = true;
+                }
+            });
+
+
+            document.getElementById('popup-modal').style.display = 'block';
+        }
+
+        function closePopup() {
+            document.getElementById('popup-modal').style.display = 'none';
+            document.getElementById('message').textContent = '';
+        }
+
+        document.getElementById('module-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+
+            const selectedModules = Array.from(document.querySelectorAll('input[name="modules[]"]:checked')).map(cb => cb.value);
+            const email = document.getElementById('email-popup').textContent;
+
+            fetch('/dashboard/insert-modules', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, modules: selectedModules })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data); 
+                    if (data.success) {
+                        document.getElementById('message').textContent = data.message;
+                        document.getElementById('message').style.color = 'green';
+                    } else {
+                        document.getElementById('message').textContent = data.message;
+                        document.getElementById('message').style.color = 'red';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('message').textContent = 'Error updating modules.';
+                    document.getElementById('message').style.color = 'red';
+                });
+        });
+
+    </script>
+</body>
+
+</html>

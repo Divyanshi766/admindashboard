@@ -1,26 +1,220 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Categories</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap"
-    rel="stylesheet">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        table th,
+        table td {
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        table thead th {
+            background-color: #3f51b5;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        table tbody tr:hover {
+            background-color: #e8f0fe;
+        }
+
+        table tbody td {
+            border-bottom: 1px solid #ddd;
+        }
+
+        table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .main-title h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .main-container {
+            padding: 20px;
+        }
+
+        .search-export-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .search-bar {
+            padding: 8px;
+            font-size: 16px;
+            width: 200px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .export-btn {
+            padding: 10px 15px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .export-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
+
 <body>
-        <div class="grid-container">
-            <!-- Header -->
-            <%- include('../partials/header.ejs')%>
-                
-            
-            <%- include('../partials/sidebar.ejs') %>
-    
-        <div class="main-container">
-             <div class="main-title">
-                <h2>Dashboard</h2>
-             </div>
-    </main>
+    <div class="grid-container">
+
+        <%- include('../partials/header.ejs') %>
+            <aside id="sidebar">
+                <div class="sidebar-title">
+                    <div class="sidebar-brand">
+                        <span class="material-icons-outlined">shopping_cart</span> STORE
+                    </div>
+                    <span class="material-icons-outlined" onclick="closeSidebar()">close</span>
+                </div>
+                <a class="sidebar-list">
+                    <li class="sidebar-list-item"><a href="../dashboard/dashboard">Dashboard</a></li>
+                    <li class="sidebar-list-item"><a href="../dashboard/products">Products</a></li>
+                    <li class="sidebar-list-item"><a href="../dashboard/categories">Categories</a></li>
+                    <li class="sidebar-list-item"><a href="../dashboard/customers">Customers</a></li>
+                    <li class="sidebar-list-item"><a href="../dashboard/inventory">Inventory</a></li>
+                    <li class="sidebar-list-item"><a href="../dashboard/createUser">CreateUser</a></li>
+                    <li class="sidebar-list-item"><a href="../dashboard/roles">Role </a></li>
+                    <li class="sidebar-list-item"><a href="/logout">Logout</a></li>
+                </a>
+            </aside>
+
+            <div class="main-container">
+                <div class="main-title">
+                    <!-- <h2>Categories List</h2> -->
+                </div>
+
+
+                <div class="search-export-container">
+                    <input type="text" id="search-bar" class="search-bar" placeholder="Search Categories..."
+                        onkeyup="searchTable()">
+                    <button class="export-btn" onclick="exportTableToCSV()">Export to CSV</button>
+                </div>
+
+                <div class="container">
+                    <table id="categories-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Category Name</th>
+                                <th>Description</th>
+                                <th>Date Added</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% categories.forEach((category, index)=> { %>
+                                <tr>
+                                    <td>
+                                        <%= index + 1 %>
+                                    </td>
+                                    <td>
+                                        <%= category.category_name %>
+                                    </td>
+                                    <td>
+                                        <%= category.description %>
+                                    </td>
+                                    <td>
+                                        <%= category.date_added %>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+    </div>
+
+    <script>
+        // Function to search through the table
+        function searchTable() {
+            var input = document.getElementById('search-bar');
+            var filter = input.value.toLowerCase();
+            var table = document.getElementById('categories-table');
+            var tr = table.getElementsByTagName('tr');
+
+            for (var i = 1; i < tr.length; i++) {
+                var td = tr[i].getElementsByTagName('td');
+                var match = false;
+                for (var j = 0; j < td.length; j++) {
+                    if (td[j] && td[j].innerText.toLowerCase().indexOf(filter) > -1) {
+                        match = true;
+                    }
+                }
+                tr[i].style.display = match ? '' : 'none';
+            }
+        }
+
+        // Function to export table data to CSV
+        function exportTableToCSV() {
+            var table = document.getElementById('categories-table');
+            var rows = table.rows;
+            var csvContent = "data:text/csv;charset=utf-8,";
+
+
+            for (var i = 0; i < rows.length; i++) {
+                var row = rows[i];
+                var cells = row.getElementsByTagName('td');
+                var rowData = [];
+                for (var j = 0; j < cells.length; j++) {
+                    rowData.push(cells[j].innerText);
+                }
+                csvContent += rowData.join(",") + "\r\n";
+            }
+
+
+            var encodedUri = encodeURI(csvContent);
+            var link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', 'categories.csv');
+            link.click();
+        }
+    </script>
 </body>
+
 </html>

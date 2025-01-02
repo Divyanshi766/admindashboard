@@ -1,232 +1,187 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: white;
     color: black;
     font-family: 'Montserrat', sans-serif;
-  }
-  
-  .material-icons-outlined {
+    overflow-x: hidden;
+    overflow-y: hidden;   
+    -ms-overflow-style: none; 
+    /* scrollbar-width: none;     */
+}
+
+body::-webkit-scrollbar {
+    display: none; 
+}
+
+.material-icons-outlined {
     vertical-align: middle;
-    line-height: 1px;
     font-size: 35px;
-  }
-  
-  .grid-container {
+}
+
+.grid-container {
     display: grid;
-    grid-template-columns: 260px 1fr 1fr 1fr;
-    grid-template-rows: 0.2fr 3fr;
+    grid-template-columns: 260px 1fr;
+    grid-template-rows: 70px 1fr;
     grid-template-areas:
-      'sidebar header header header'
-      'sidebar main main main';
+        'sidebar header'
+        'sidebar main';
     height: 100vh;
-  }
-  
-  /* ---------- HEADER ---------- */
-  .header {
-    grid-area: header;
-    height: 70px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 30px 0 30px;
-    box-shadow: white;
-  }
-  
-  .menu-icon {
-    display: none;
-  }
-  
-  /* ---------- SIDEBAR ---------- */
-  
-  #sidebar {
+    overflow: hidden;
+}
+
+.header {
+  grid-area: header;
+  background-color: white;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 30px 0 30px;
+  box-shadow: 0 6px 7px -3px rgba(0, 0, 0, 0.35);
+  /* z-index: 10;
+  position: sticky;
+  top: 0; */
+}
+
+.menu-icon {
+  display: none;
+}
+
+#sidebar {
     grid-area: sidebar;
-    height: 100%;
     background-color: white;
+    color: black;
+    height: 100%;
     overflow-y: auto;
-    transition: all 0.5s;
-    -webkit-transition: all 0.5s;
-  }
-  
-  .sidebar-title {
+    padding: 10px 0;
+    z-index: 10;
+}
+
+.sidebar-title {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 30px 30px 30px 30px;
-    margin-bottom: 30px;
-  }
-  
-  .sidebar-title > span {
-    display: none;
-  }
-  
-  .sidebar-brand {
-    margin-top: 15px;
-    font-size: 20px;
-    font-weight: 700;
-  }
-  
-  .sidebar-list {
-    padding: 0;
-    margin-top: 15px;
-    list-style-type: none;
-  }
-  
-  .sidebar-list-item {
-    padding: 20px 20px 20px 20px;
+    padding: 20px;
+}
+
+.sidebar-title > span {
+    display: block;
     font-size: 18px;
-    list-style-type:none;
-  }
-  
-  .sidebar-list-item:hover {
+    font-weight: bold;
+    color: black;
+}
+
+.sidebar-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-list-item {
+    list-style: none;
+    padding: 15px 20px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.sidebar-list-item:hover {
     background-color: rgba(255, 255, 255, 0.2);
-    cursor: pointer;
-  }
-  
-  .sidebar-list-item > a {
+}
+
+.sidebar-list-item a {
     text-decoration: none;
-    color:black;
-  }
-  
-  .sidebar-responsive {
-    display: inline !important;
+    color: black;
+    display: block;
+}
+
+
+.sidebar-responsive {
+    display: none;
     position: absolute;
-    /*
-      the z-index of the ApexCharts is 11
-      we want the z-index of the sidebar higher so that
-      the charts are not showing over the sidebar 
-      on small screens
-    */
     z-index: 12 !important;
-  }
-  
-  /* ---------- MAIN ---------- */
-  
-  .main-container {
+}
+/* .container h1{
+ display: inline;
+ justify-content: center;
+ text-align: center;  
+} */
+
+.main-container {
     grid-area: main;
+    padding: 20px;
     overflow-y: auto;
-    padding: 20px 20px;
-    color: rgba(255, 255, 255, 0.95);
-  }
-  
-  .main-title {
+    background-color: #f9f9f9;
+    z-index: 8;
+}
+
+.main-title {
     display: flex;
     justify-content: space-between;
-  }
-  
-  .main-cards {
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+.main-cards {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 20px;
-    margin: 20px 0;
-  }
-  
-  .card {
+    margin-bottom: 20px;
+}
+
+.card {
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
-    padding: 25px;
-    border-radius: 5px;
-  }
-  
-  .card:first-child {
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    border-radius: 8px;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card:first-child {
     background-color: #2962ff;
-  }
-  
-  .card:nth-child(2) {
+}
+
+.card:nth-child(2) {
     background-color: #ff6d00;
-  }
-  
-  .card:nth-child(3) {
+}
+
+.card:nth-child(3) {
     background-color: #2e7d32;
-  }
-  
-  .card:nth-child(4) {
+}
+
+.card:nth-child(4) {
     background-color: #d50000;
-  }
-  
-  .card-inner {
+}
+
+.card-inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-  }
-  
-  .card-inner > .material-icons-outlined {
-    font-size: 45px;
-  }
-  
-  .charts {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-top: 60px;
-  }
-  
-  .charts-card {
-    background-color: #263043;
-    margin-bottom: 20px;
-    padding: 25px;
-    box-sizing: border-box;
-    -webkit-column-break-inside: avoid;
-    border-radius: 5px;
-    box-shadow: 0 6px 7px -4px rgba(0, 0, 0, 0.2);
-  }
-  
-  .chart-title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  /* ---------- MEDIA QUERIES ---------- */
-  
-  /* Medium <= 992px */
-  
-  @media screen and (max-width: 992px) {
+    width: 100%;
+}
+
+.card-inner > .material-icons-outlined {
+    font-size: 30px;
+}
+
+
+@media (max-width: 768px) {
     .grid-container {
-      grid-template-columns: 1fr;
-      grid-template-rows: 0.2fr 3fr;
-      grid-template-areas:
-        'header'
-        'main';
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+        grid-template-areas:
+            'main';
     }
-  
+
     #sidebar {
-      display: none;
+        display: none;
     }
-  
-    .menu-icon {
-      display: inline;
-    }
-  
-    .sidebar-title > span {
-      display: inline;
-    }
-  }
-  
-  /* Small <= 768px */
-  
-  @media screen and (max-width: 768px) {
-    .main-cards {
-      grid-template-columns: 1fr;
-      gap: 10px;
-      margin-bottom: 0;
-    }
-  
-    .charts {
-      grid-template-columns: 1fr;
-      margin-top: 30px;
-    }
-  }
-  
-  /* Extra Small <= 576px */
-  
-  @media screen and (max-width: 576px) {
-    .hedaer-left {
-      display: none;
-    }
-  }
-  
 
-
-  
+    .sidebar-responsive {
+        display: inline;
+    }
+}

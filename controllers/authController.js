@@ -1,16 +1,26 @@
+const nodemailer = require('nodemailer');
 const { hashPassword, verifyPassword } = require('../utils/passwordUtils');
 const userModel = require('../models/userModel');
-
-
 const jwt = require('jsonwebtoken');
-const JWT_SECRET_KEY = 'divyanshi1327@#$%^&*(HGVD';
+
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || 'default_secret_key';
+
+const createTransporter = () => {
+  return nodemailer.createTransport({
+    service: 'gmail', 
+    auth: {
+      user: process.env.EMAIL_USER, 
+      pass: process.env.EMAIL_PASS, 
+    },
+  });
+};
 
 exports.getLogin = (req, res) => {
   res.render('login', { error: null });
 };
 
 exports.postLogin = async (req, res) => {
-  const {email, password } = req.body;
+  const { email, password } = req.body;
 
   try {
     const user = await userModel.findByEmail(email);
@@ -24,121 +34,73 @@ exports.postLogin = async (req, res) => {
     }
 
     const payload = { id: user.id, email: user.email, role: user.role };
-    const token = jwt.sign(payload, JWT_SECRET_KEY, { expiresIn: '1h' });
+    const token = jwt.sign(payload, JWT_SECRET_KEY, { expiresIn: '7d' });
 
     res.json({ message: 'Login successful', token });
-    
-
   } catch (error) {
-    console.error(error);
+    console.error('Error during login:', error);
     res.status(500).send('Server error');
   }
-};
-
-exports.getLogin = (req, res) => {
-  res.render('login', { error: null });
-};
-
-exports.postLogin = async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    const user = await userModel.findByEmail(email);
-    if (!user) {
-      return res.render('login', { error: 'Invalid email or password' });
-    }
-
-    const isMatch = verifyPassword(password, user.hash, user.salt);
-    if (!isMatch) {
-      return res.render('login', { error: 'Invalid email or password' });
-    }
-
-    req.session.user = { id: user.id, email: user.email, role: user.role };
-
-    if (user.role.toLowerCase() === 'superadmin') {
-      return res.redirect('/superadmin');
-    } else if (user.role.toLowerCase() === 'admin') {
-      return res.redirect('/admin');
-    } else if (user.role.toLowerCase() === 'user') {
-      return res.redirect('/user');
-    }
-
-    res.status(403).send('Role not recognized');
-  } catch (err) {
-    console.error('Login Error:', err);
-    res.status(500).send('Server error');
-  }
-};
-
-exports.getRegister = (req, res) => {
-  res.render('register', { error: null });
-};
-
-exports.postRegister = async (req, res) => {
-  const { email, password, role } = req.body;
-
-  try {
-    const existingUser = await userModel.findByEmail(email);
-    if (existingUser) {
-      return res.render('register', { error: 'Email is already registered' });
-    }
-
-    const { salt, hash } = hashPassword(password);
-    await userModel.create({ email, hash, salt, role });
-    res.redirect('/login');
-  } catch (err) {
-    console.error('Registration Error:', err);
-    res.status(500).send('Server error');
-  }
-};
-
-exports.getDashboard = (req, res) => {
-    res.render('dashboard/dashboard', { user: req.user });
 };
 
 exports.createUser = async (req, res) => {
-  const { email, password, role } = req.body;
+  const { email, username, password, role } = req.body;
 
- 
+  console.log('Received data for user creation:', req.body);
+
+  if (!email || !username || !password || !role) {
+    return res.status(400).send('All fields are required');
+  }
+
   if (!['user', 'admin', 'superadmin'].includes(role)) {
     return res.status(400).send('Invalid role');
   }
 
   try {
-    const existingUser = await userModel.findByEmail(email);
-    if (existingUser) {
-      return res.status(400).send('Email is already taken');
-    }
-    const { salt, hash } = hashPassword(password);
+    const { hash } = hashPassword(password);
+    await userModel.createUser({ email, username, password: password, role });
 
-   
-    await userModel.create({ email, hash, salt, role });
+    const transporter = createTransporter();
+    const mailOptions = {
+      from: process.env.EMAIL_USER, 
+      to: email, 
+      subject: 'Welcome to Our Platform', 
+      text: `Hello ${username},\n\nYour account has been successfully created. You are now an ${role}.`,
+    };
 
-    
-    res.redirect('/admin-dashboard');  
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Error sending email:', error);
+      } else {
+        console.log('Email sent:', info.response);
+      }
+    });
+
+  res.redirect('/createUser');
   } catch (err) {
     console.error('Error creating user:', err);
     res.status(500).send('Server error');
   }
 };
 
-exports.superAdminDashboard = (req, res) => {
-  res.render('dashboard/superAdminDashboard', { user: req.session.user });
+exports.getUsersWithRoles = async (req, res) => {
+  try {
+    const users = await userModel.getUsersWithRoles();
+    res.status(200).json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Error fetching users' });
+  }
 };
 
-exports.adminDashboard = (req, res) => {
-  res.render('dashboard/adminDashboard', { user: req.session.user });
-};
-
-exports.userDashboard = (req, res) => {
-  res.render('dashboard/userDashboard', { user: req.session.user });
-};
-
-exports.dashboard = (req, res) => {
-  res.render('dashboard/dashboard');
-};
-
-exports.dashboard=(req,res)=>{
-  res.render('dashboard/createUser');
-}
+// exports.getModulesByRoleId = async (req, res) => {
+//   try {
+//     const { roleId } = req.params;
+//     const modules = await userModel.getModulesByRoleId(roleId);
+//     res.status(200).json(modules);
+//   } catch (error) {
+//     console.error('Error fetching modules:', error);
+//     res.status(500).json({ message: 'Error fetching modules' });
+//   }
+// };
 

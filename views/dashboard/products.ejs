@@ -8,26 +8,219 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-
-    <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
-    <link rel="stylesheet" href="/style.css"> <!-- Link your CSS file -->
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        table th,
+        table td {
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        table thead th {
+            background-color: #3f51b5;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        table tbody tr:hover {
+            background-color: #e8f0fe;
+        }
+
+        table tbody td {
+            border-bottom: 1px solid #ddd;
+        }
+
+        table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .main-title h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .main-container {
+            padding: 20px;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #searchInput {
+            padding: 8px;
+            font-size: 16px;
+            width: 200px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        #exportButton {
+            padding: 10px 15px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
 
     <div class="grid-container">
-        <!-- Header -->
-        <%- include('../partials/header.ejs')%>
-
-
-            <%- include('../partials/sidebar.ejs') %>
-
-                <div class="main-container">
-                    <div class="main-title">
-                        <h2>Dashboard</h2>
+        <%- include('../partials/header.ejs') %>
+            <aside id="sidebar">
+                <div class="sidebar-title">
+                    <div class="sidebar-brand">
+                        <span class="material-icons-outlined">shopping_cart</span> STORE
                     </div>
-                    </main>
+                    <span class="material-icons-outlined" onclick="closeSidebar()">close</span>
+                </div>
+                <a class="sidebar-list">
+                    <li class="sidebar-list-item"><a href="../dashboard/dashboard">Dashboard</a></li>
+                    <li class="sidebar-list-item"><a href="../dashboard/products">Products</a></li>
+                    <li class="sidebar-list-item"><a href="../dashboard/categories">Categories</a></li>
+                    <li class="sidebar-list-item"><a href="../dashboard/customers">Customers</a></li>
+                    <li class="sidebar-list-item"><a href="../dashboard/inventory">Inventory</a></li>
+                    <li class="sidebar-list-item"><a href="../dashboard/createUser">CreateUser</a></li>
+                    <li class="sidebar-list-item"><a href="../dashboard/roles">Role</a></li>
+                    <li class="sidebar-list-item"><a href="/logout">Logout</a></li>
+                </a>
+            </aside>
+
+            <div class="main-container">
+                <div class="main-title">
+                    <!-- <h2>Products List</h2> -->
+                </div>
+
+
+                <div class="controls">
+                    <input type="text" id="searchInput" placeholder="Search by product name..." onkeyup="searchTable()">
+                    <button id="exportButton" onclick="exportTableToCSV()">Export to CSV</button>
+                </div>
+
+                <div class="container">
+                    <table id="productTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Product Name</th>
+                                <th>Category</th>
+                                <th>Stock</th>
+                                <th>Price</th>
+                                <th>Description</th>
+                                <th>Date Added</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% products.forEach((product, index)=> { %>
+                                <tr>
+                                    <td>
+                                        <%= index + 1 %>
+                                    </td>
+                                    <td>
+                                        <%= product.product_name %>
+                                    </td>
+                                    <td>
+                                        <%= product.category %>
+                                    </td>
+                                    <td>
+                                        <%= product.stock %>
+                                    </td>
+                                    <td>
+                                        <%= product.price %>
+                                    </td>
+                                    <td>
+                                        <%= product.description %>
+                                    </td>
+                                    <td>
+                                        <%= product.date_added %>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+    </div>
+
+    <script>
+        function searchTable() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('productTable');
+            const rows = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                const productName = cells[1] ? cells[1].textContent.toLowerCase() : '';
+                rows[i].style.display = productName.includes(filter) ? '' : 'none';
+            }
+        }
+
+
+        function exportTableToCSV() {
+            const table = document.getElementById('productTable');
+            const rows = table.rows;
+            const csv = [];
+            const headers = [];
+
+            for (let i = 0; i < rows[0].cells.length; i++) {
+                headers.push(rows[0].cells[i].textContent.trim());
+            }
+            csv.push(headers.join(','));
+
+
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                const cells = row.getElementsByTagName('td');
+                const rowData = [];
+                for (let j = 0; j < cells.length; j++) {
+                    rowData.push(cells[j].textContent.trim());
+                }
+                csv.push(rowData.join(','));
+            }
+
+            const csvFile = new Blob([csv.join('\n')], { type: 'text/csv' });
+            const downloadLink = document.createElement('a');
+            downloadLink.href = URL.createObjectURL(csvFile);
+            downloadLink.download = 'products.csv';
+            downloadLink.click();
+        }
+    </script>
+
 </body>
 
 </html>

@@ -18,24 +18,17 @@ app.use(session({
   cookie: { secure: false } 
 }));
 
-
-const superadminRoutes = require('./routes/superadminRoutes');
-app.use('/', superadminRoutes);
-
-const adminRoutes = require('./routes/adminRoutes');
-app.use('/', adminRoutes);
-const userRoutes = require('./routes/userRoutes');
-app.use('/', userRoutes);
-
 const publicDirectory = path.join(__dirname, "./public");
 app.use(express.static(publicDirectory)); 
 
 const authRoutes=require('./routes/authRoutes');
-app.use('/dashboard', authRoutes);
-
-
-
+app.use('/dashboard', authRoutes); 
+app.use('/api', authRoutes);
 app.use('/', routes);
+app.use('/auth', authRoutes); 
+app.use( authRoutes);
+
+
 const PORT = process.env.PORT || 3009;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
